@@ -1,0 +1,17 @@
+paso1: ABRIR ROUTER
+
+paso1.1: Al pricipio de todo tenemos las variables que contiene la informacion de la ruta y la informacion de method pues antes a esas dos variables vamos a crear una nueva en este caso le vamos a poner rutas protegidas las cuales van a ser igual a un arreglo el cual vamos a rellenar con un estring /admin esta va a ser la primera ruta que vamos a agregar luego agregamos todas las demas incluso la de vendedores.
+
+DATO(si debugueamos rutaActual podemos ver que se va a traer el nombre de la ruta en la cual estamos situados)
+
+paso1.2: Despues de saber si es post o get colocamos una nueva validacion este se va a encargar de revisar con la funcion de in_array los dos arreglos a analizar en este caso son $rutas_protegidas y $urlActual entonces la funcion mencionada revisa si coinciden por ejemplo si a rutas_protegidas le paso la ruta de /admin y en urlActual que es le array que se encarga de retornar la ruta en la que estamos coinciden entonces ya hay una coincidencia y la funcion retornara true y si colocamos en el validar echo es una ruta protegida podemos saber si esta funcionando 
+
+paso1.3: En el principo tenemos que llamar la funcion de session_star la cual nos va a trar datos los cuales podemos ver debugueando la super global de session en este caso tiene dos atributos email y login que fueron los dos atributos que creamos despues de validar el login completo 
+
+paso1.4: Vamos a usar el resultado de login para poder validarlo osea asignamos una variable a la superglobal en el campo de login
+
+paso1.5: luego en el validador de array agrefamos && para que se cumplan las dos condiciones pero en este caso vamos a negar que este $auth 
+
+DATO: Entonces la validacion solo tiene que validar que se encuentre en una ruta privada y que no este autenticado si esta validacion se cumple entonces redireccionamos, 
+
+paso 1.6: en el arreglo de rutas privadas vamos a agregar todas las rutas que queremos proteger. 

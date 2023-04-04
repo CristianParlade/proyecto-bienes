@@ -1,0 +1,189 @@
+paso numero 1: primero tenemos que enviar los datos via post osea rellenamos un formulario y le damos a enviar
+Recuerda que el fomulario tiene que tener asignado un action y darle la direccion de donde va a ir esta informacion enviada
+
+En este caso lo enviamos a /login que es la vista que tiene asignado el metodo de login en el index public
+
+paso2: una ves enviados los datos podemos asignarlos a una variable para debuguear y ver los resultados que el usuario ha escrito. esto lo debemos hacer dentro de el metodo asignado en la clase en este caso login
+
+paso3: dentro del metodo ya podemos poner si es request method es igua a post
+
+paso4: instanciamos un nuevo objeto en este caso el objeto de Admin que es que tiene el constructor de el usuario el cual entre parentesis le colocamos la superglobal de post para que se traiga los datos del fomulario este nuevo objeto tenemos que asignarlo a una varible este caso auth
+
+paso5: tenemos que validar los datos ya tenems creado un metodo de validacion el cual retorna una variable con su posibles errores y si no tiene nada entonces va retornar una varible vacia 
+
+paso6: validamos si la varible esta vacia con la funcion de empty 
+
+paso7: si la variable esta vacia entonces pasamos validar si la varibale que tiene todos los datos enviados por usuario coinciden con los de la base de datos
+
+paso8: los metodos los estams creando todos en admin que es el model donde se van a crear todos los metodos en en el controlador los vamos a llamar 
+
+paso9: una ves en el modelo vamos a crear el metodo para comprobar si los datos son correctos vamos a empezar escribiendo un query  el cual se va a encargar de consultar la base de datos 
+
+paso10: selecionamos todo donde la usuarios donde el email a lo que escribio el usuario como hacemos eso, si debugueamos post podemos ver que tenemos 1 objeto con 2 atributos email y password entonces para acceder al atributo usamos this que va hacer referencia a donde estamos llamando el metodo en este caso dentro de controller en el metodo de login vamos a tener una validacion la cual va a obtener los datos del fomulario entonces para saber si esta  bien escrito el query debugueamos query y verificamos en tableplus 
+
+paso11: ahora con la sintaxis de self::$db hacemos referencia a la base de datos configurada en active recor por eso es que utilizamos self por que ya estams heredando todo de active record luego con la sintaxis de flecha pasamos el query en la funcin de query
+
+
+
+paso12: si debugueamos el resultado de la consulta a la base de datos podemos ver un objeto el cual contiene una tributo llamado num_row este va a indicar si conicide el emai con un usuario de la base de datos 
+
+para poder ver la informacion del num_rows utilizamos la funcion de fetch_object() entonces quedaria de esta manera
+
+debuguear($resultado->fetch_objetc());
+
+paso13: validamos si hay numrows  esto lo hacemos utilizando el resultado de la consulta a la base de datos y con la sintaxis de flecha podemos acceder a el atributo de num_rows negando la condicion podemos decir que asigne a la variable estatica de errores en forma de arreglo el estring que sea nesesario para el usuario y terminamos con un return para que en caso de que haya un error detenga la ejecucion 
+
+si esta condicion se no se cumple osea existe un usuario retornamos el resultado a la ejemplo return $resultado esta informacion se queda grabada en el resultado de la funcion. 
+
+
+paso15: entonces donde mandamos a llamar la funcion pasamos los datos de esta funcion la cual ya tendra datos a una variable la cual validaremos si existe o no 
+
+paso16: si no existe la variable asignamos a errores la funcion heredad de active recor get errores 
+
+paso17: si existe la variable entonces llamamos una nueva funcion que vamos a crear para verificar si el password es correcto  y le pasamos como parametro la variable  de $resultdo obtenido en la funcion de existeUsuario
+
+paso18: creamos una varibale en este caso usuario la cual le vamos a pasar la informacion de $resultado la cual tiene num_rows recuerda que para convertir esa informacion a un arreglo y obtener los datos de la base de datos tenemos que usar fetch_objetc()
+
+paso19: mandamos a llamar la funcion que verifica los password hasheados password_verify esta toma dos parametros primero lo que usuario escribio recuerda que siempre vamos a acceder a lo del usuario con this y luego el password de la bd.
+password_verify retorna true o false asique asignamos ese valor a una variable para poder autenticado si todo esta correcto 
+
+paso20: comprobarPassword nos retornara true en caso de que el paswor este correcto este valor lo asignamos a una variable y lo pasamos al validador
+
+paso22: si $autenticado es true entonces creamos variable y mandamos a llamar la funcion de autenticar la cual vamos a crear en el controlador 
+
+pas23: creamos la funcion de auntenticar pasamos la funcion de iniciar session agregamos agregamos dos atributos al objeto uno va a ser el usuario en este caso sera this->email
+y el segudno va a ser un helper que este tiene como valor true y por ultimo redireccionamos a la pagina de admin.
+
+
+
+
+
+
+
+
+
+
+
+
+(((((((admin)))))))
+
+public function validar(){
+        if(!$this->email){
+            //self:: por que en activerecordes donde creamos la variable de errores la cual es estatica para que no se reescriba y si hay multiples errores que se muestren todos 
+            self::$errores[] = 'El email es obligatorio';
+        }
+        if(!$this->password){
+            self::$errores[] = 'El password es obligatorio';
+        }
+        return self::$errores;
+    }
+    public function existeUsuario(){
+        $query = "SELECT * FROM " . self::$tabla . " WHERE email = '" . $this->email . "' LIMIT 1";
+
+        $resultado = self::$db->query($query);
+        if(!$resultado->num_rows){
+            self::$errores[] = 'El usuario No existe';
+            return;// return detiene la ejecucion por lo tanto nunca retornara ningun valor pero si pasa esta validacion esto enviara datos los cualos asignando una variable al resultado de esta funcion que esto lo hacemos de donde mandamos a llamar el metodo.
+        } 
+        return $resultado;
+        
+
+        //este $db viene del active record el cual ahora estamos heredando por eso usamos self por que es como si estubiesemos dentro del model active record el cual tiene la la conexion a la base de datos 
+     
+    }
+
+    public function comprobarPassword($resultado){
+    $usuario = $resultado->fetch_object();
+
+    $autenticado = password_verify($this->password, $usuario->password);
+
+    if(!$autenticado){
+        self::$errores[] = 'El password es incorrecto';
+        }
+        return $autenticado;
+    }
+
+    public function autenticar(){
+        session_start();
+
+        $_SESSION['usuario'] = $this->email;
+        $_SESSION['login'] = true;
+
+        header('Location: /admin');
+
+    }
+
+
+
+
+(((((((controlador)))))))
+
+    $errores = [];
+
+if($_SERVER['REQUEST_METHOD']  === 'POST'){
+    $auth = new Admin($_POST);
+    //?new Admin esto quiere decir que cogemos la clase ya instanciada (el costructor del objeto) y entre parentesis $_POST esto va a llenar los campos del constructor con los datos que el usuario pase al fomulario
+
+    //y en cada tabla tenemos nustro validador creado exclusivamente 
+
+    //si nos fijamos en el metodo de validar al final retorna $errores por lo tanto la validacion a auth el resultado lo asignamos a la varibale de errores para luego validar si esa varible esta vacia entonces seguimos al siguiente paso
+    $errores = $auth->validar();
+
+ if(empty($errores)){
+     //validar si el usuario existe
+    $resultado = $auth->existeUsuario();
+        //validar si la contraseña es valida
+        if(!$resultado){
+            $errores = Admin::getErrores();
+        }else{
+           $autenticado = $auth->comprobarPassword($resultado);
+        }
+
+        if($autenticado){
+           $auth->autenticar();
+          
+        }else{
+             //password incorrecto
+             $errores = Admin::getErrores();
+        }
+    
+    
+ }
+    
+}
+
+
+
+
+((((((codigo de configuracion de fomrulario alternativo para resibir mensajes en el email))))))
+
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com'; 
+        $mail->SMTPDebug= 2;
+        $mail->Mailer= "smtp";
+        $mail->SMTPAuth= true;
+        $mail->Port = 587;
+        $mail->Username = 'parladecristian.19972020@gmail.com';
+        $mail->Password = 'ktibzhrncufwutgx';
+        $mail->Priority = 1;
+        $mail->SMTPSecure = 'tls';
+            //configurar el contenido del mail
+        $mail->addAddress('parladecristian.19972020@gmail.com');//direccion donde se van a recibir 
+        $mail->setFrom('admin@bienesraices.com', 'Admin'); //esto quiere decir quien envia el email. 
+        $mail->Subject = 'Tienes un nuevo mensaje';//este es el mensaje que nos avisara de una nuevo email en mailtrap
+
+        //habilitar HTML
+        $mail->isHTML(true);
+        $mail->CharSet = 'UTF-8';
+        $contenido = '<html>';
+        $contenido .='<p>Tienes un nuevo mensaje </p> </html>';
+        $contenido.= '<p>Nombre: '. $respuestas['nombre'].'<p>';
+        if($respuestas['contacto'] === 'telefono'){
+            $contenido.='<p> Eligio ser contactado por telefono </p>';
+            $contenido.= '<p>Teléfono: '. $respuestas['telefono'].'<p>';
+            $contenido.= '<p>Fecha: '. $respuestas['fecha'].'<p>';
+            $contenido.= '<p>Hora: '. $respuestas['hora'].'<p>';
+        }else{
+            $contenido.='<p> Eligio ser contactado por email </p>';
+            $contenido.= '<p>Email: '. $respuestas['email'].'<p>';
+        }
